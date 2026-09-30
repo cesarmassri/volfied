@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10131a" />
+  <title>Territory Splitter</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>Territory Splitter</h1>
+        <p class="subtitle">Arcade de conquista territorial inspirado en los clásicos de corte de áreas.</p>
+      </div>
+      <button id="restartBtn" class="button" type="button">Reiniciar</button>
+    </header>
+
+    <section class="hud" aria-label="Estado del juego">
+      <div><span class="label">Nivel</span><strong id="level">1</strong></div>
+      <div><span class="label">Vidas</span><strong id="lives">3</strong></div>
+      <div><span class="label">Conquistado</span><strong id="claimed">0%</strong></div>
+      <div><span class="label">Objetivo</span><strong id="target">75%</strong></div>
+      <div><span class="label">Puntos</span><strong id="score">0</strong></div>
+    </section>
+
+    <section class="game-shell">
+      <canvas id="game" width="960" height="600" aria-label="Territory Splitter"></canvas>
+      <div id="overlay" class="overlay hidden" role="status" aria-live="polite">
+        <div class="overlay-card">
+          <h2 id="overlayTitle">Pausa</h2>
+          <p id="overlayText"></p>
+          <button id="overlayBtn" class="button" type="button">Continuar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="instructions">
+      <div>
+        <h2>Cómo jugar</h2>
+        <p>Movete por el territorio conquistado y entrá en la zona libre para dibujar un corte. Cuando el trazo vuelve a tocar territorio seguro, se captura toda región que no contenga al boss.</p>
+        <p>Los enemigos menores encerrados dentro de una región capturada son eliminados. Si cualquier enemigo toca tu trazo mientras está abierto, perdés una vida.</p>
+      </div>
+      <div class="controls-copy">
+        <h2>Controles</h2>
+        <p><strong>Flechas / WASD:</strong> mover · <strong>P:</strong> pausa · <strong>R:</strong> reiniciar</p>
+      </div>
+    </section>
+
+    <section class="touch-controls" aria-label="Controles táctiles">
+      <button data-dir="up" aria-label="Arriba">▲</button>
+      <div>
+        <button data-dir="left" aria-label="Izquierda">◀</button>
+        <button data-dir="down" aria-label="Abajo">▼</button>
+        <button data-dir="right" aria-label="Derecha">▶</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>

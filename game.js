@@ -25,11 +25,12 @@
 
   // Velocidades en celdas por tick. Los enemigos menores son
   // deliberadamente más rápidos para que cortar áreas grandes tenga riesgo.
-  const BOSS_BASE_SPEED = 0.18;
-  const BOSS_LEVEL_SPEED = 0.010;
-  const MINOR_BASE_SPEED = 0.26;
-  const MINOR_LEVEL_SPEED = 0.014;
+  const BOSS_BASE_SPEED = 0.19;
+  const BOSS_LEVEL_SPEED = 0.018;
+  const MINOR_BASE_SPEED = 0.275;
+  const MINOR_LEVEL_SPEED = 0.018;
   const MINOR_SPEED_VARIATION = 0.04;
+  const MAX_MINOR_ENEMIES = 12;
 
   const FREE = 0;
   const CLAIMED = 1;
@@ -105,19 +106,21 @@
     boss = makeEnemy(
       COLS * 0.5,
       ROWS * 0.36,
-      BOSS_BASE_SPEED + level * BOSS_LEVEL_SPEED,
+      BOSS_BASE_SPEED + (level - 1) * BOSS_LEVEL_SPEED,
       true
     );
 
     minors = [];
-    const minorCount = Math.min(2 + level, 8);
+    // Cada nivel agrega un enemigo menor hasta alcanzar el máximo.
+    // Incluso después del máximo, la velocidad sigue aumentando.
+    const minorCount = Math.min(2 + level, MAX_MINOR_ENEMIES);
     for (let i = 0; i < minorCount; i++) {
       const angle = (i / minorCount) * Math.PI * 2 + 0.35;
       const x = COLS * (0.28 + (i % 4) * 0.14);
       const y = ROWS * (0.28 + (i % 3) * 0.14);
       const speed =
         MINOR_BASE_SPEED +
-        level * MINOR_LEVEL_SPEED +
+        (level - 1) * MINOR_LEVEL_SPEED +
         (i % 3) * (MINOR_SPEED_VARIATION / 2);
       minors.push({
         ...makeEnemy(x, y, speed, false),
@@ -398,7 +401,7 @@
     updateHud();
     showOverlay(
       `Nivel ${level} completado`,
-      `Conquistaste ${claimedPercent().toFixed(1)}% del campo.`,
+      `Conquistaste ${claimedPercent().toFixed(1)}% del campo. El nivel ${level + 1} tendrá un boss más rápido y ${Math.min(2 + level + 1, MAX_MINOR_ENEMIES)} enemigos menores.`,
       'Siguiente nivel'
     );
   }

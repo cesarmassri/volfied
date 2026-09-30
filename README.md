@@ -45,12 +45,14 @@ Mientras el trazo está abierto, cualquier enemigo que lo toque hace perder una 
 
 Hay que conquistar al menos **75%** del área interior para superar el nivel.
 
-Cada nivel:
+Cada nivel es más difícil que el anterior:
 
-- aumenta de forma perceptible la velocidad de los enemigos;
-- agrega enemigos menores, hasta un máximo;
-- los enemigos menores parten con una velocidad bastante mayor que en la primera versión, para que los cortes largos sean arriesgados;
-- conserva la misma mecánica de captura.
+- el **boss aumenta su velocidad** en cada nivel;
+- los **enemigos menores también aceleran** en cada nivel;
+- aparece **un enemigo menor adicional por nivel** hasta un máximo de 12;
+- después de alcanzar ese máximo, la dificultad sigue creciendo mediante la velocidad;
+- los enemigos menores parten con una velocidad suficientemente alta para que los cortes largos sean arriesgados;
+- al terminar un nivel, la pantalla indica cuántos enemigos habrá en el siguiente.
 
 ## Puntaje
 

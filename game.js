@@ -23,6 +23,14 @@
   const TARGET_PERCENT = 75;
   const TICK_MS = 28;
 
+  // Velocidades en celdas por tick. Los enemigos menores son
+  // deliberadamente más rápidos para que cortar áreas grandes tenga riesgo.
+  const BOSS_BASE_SPEED = 0.18;
+  const BOSS_LEVEL_SPEED = 0.010;
+  const MINOR_BASE_SPEED = 0.26;
+  const MINOR_LEVEL_SPEED = 0.014;
+  const MINOR_SPEED_VARIATION = 0.04;
+
   const FREE = 0;
   const CLAIMED = 1;
   const TRAIL = 2;
@@ -97,7 +105,7 @@
     boss = makeEnemy(
       COLS * 0.5,
       ROWS * 0.36,
-      0.15 + level * 0.008,
+      BOSS_BASE_SPEED + level * BOSS_LEVEL_SPEED,
       true
     );
 
@@ -107,7 +115,10 @@
       const angle = (i / minorCount) * Math.PI * 2 + 0.35;
       const x = COLS * (0.28 + (i % 4) * 0.14);
       const y = ROWS * (0.28 + (i % 3) * 0.14);
-      const speed = 0.12 + level * 0.006 + (i % 2) * 0.015;
+      const speed =
+        MINOR_BASE_SPEED +
+        level * MINOR_LEVEL_SPEED +
+        (i % 3) * (MINOR_SPEED_VARIATION / 2);
       minors.push({
         ...makeEnemy(x, y, speed, false),
         vx: Math.cos(angle) * speed,

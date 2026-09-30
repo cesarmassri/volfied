@@ -47,8 +47,9 @@ Hay que conquistar al menos **75%** del área interior para superar el nivel.
 
 Cada nivel:
 
-- aumenta ligeramente la velocidad de los enemigos;
+- aumenta de forma perceptible la velocidad de los enemigos;
 - agrega enemigos menores, hasta un máximo;
+- los enemigos menores parten con una velocidad bastante mayor que en la primera versión, para que los cortes largos sean arriesgados;
 - conserva la misma mecánica de captura.
 
 ## Puntaje
@@ -75,7 +76,7 @@ Contiene la interfaz, el `canvas`, HUD, instrucciones y controles táctiles.
 
 ### `style.css`
 
-Diseño responsive. No usa frameworks ni fuentes remotas.
+Diseño responsive. No usa frameworks ni fuentes remotas. El tablero se muestra con un ancho máximo de 860 px para que entre mejor en una ventana de navegador estándar sin alterar su resolución interna de 960 × 600.
 
 ### `game.js`
 

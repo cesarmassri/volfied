@@ -39,7 +39,7 @@ Esta regla reproduce la idea importante de que se puede **encerrar y matar enemi
 
 ## Riesgo
 
-Mientras el trazo está abierto, cualquier enemigo que lo toque hace perder una vida. El trazo incompleto desaparece y el jugador vuelve a una posición segura.
+Mientras el trazo está abierto, cualquier enemigo que lo toque hace perder una vida. El trazo incompleto desaparece y el jugador vuelve a una posición segura. Para el jugador, en cambio, su propio trazo abierto funciona como una pared: no puede atravesarlo ni pisarlo, pero tocarlo no cuesta una vida.
 
 ## Objetivo
 
@@ -90,7 +90,8 @@ Contiene todo el motor:
 - flood fill desde el boss;
 - captura de regiones;
 - eliminación de enemigos menores;
-- colisiones enemigo-trazo;
+- colisiones enemigo-trazo (el enemigo destruye el trazo y hace perder una vida);
+- colisión jugador-trazo (el trazo actúa como pared);
 - porcentaje conquistado;
 - niveles, vidas y puntuación;
 - renderizado en Canvas 2D.
@@ -180,3 +181,10 @@ Este proyecto no contiene ROMs, código, música, sprites, logos ni otros recurs
 ## Licencia sugerida
 
 El código original de este proyecto puede publicarse bajo MIT. Si se agregan recursos externos (música, imágenes, tipografías, etc.), revisar por separado sus licencias antes de distribuirlos.
+
+
+## Regla de colisión del trazo
+
+- **Enemigo → trazo abierto:** se pierde una vida inmediatamente.
+- **Jugador → su propio trazo abierto:** el movimiento se bloquea; el trazo funciona como una pared.
+- **Jugador → territorio conquistado:** si estaba dibujando, el trazo se cierra y se resuelve la captura de región.

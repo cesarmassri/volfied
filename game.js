@@ -192,10 +192,9 @@
     const destination = getCell(nx, ny);
 
     if (player.drawing) {
-      if (destination === TRAIL) {
-        loseLife();
-        return;
-      }
+      // El jugador no puede cruzar ni pisar su propio trazo abierto.
+      // Para él, el TRAIL funciona como una pared.
+      if (destination === TRAIL) return;
 
       player.x = nx;
       player.y = ny;
@@ -326,24 +325,28 @@
     return reachable;
   }
 
-  function enemyTouchesTrail(enemy) {
-    const radius = enemy.radius + 0.35;
-    const minX = Math.floor(enemy.x - radius);
-    const maxX = Math.ceil(enemy.x + radius);
-    const minY = Math.floor(enemy.y - radius);
-    const maxY = Math.ceil(enemy.y + radius);
+  function circleTouchesTrail(x, y, enemyRadius) {
+    const radius = enemyRadius + 0.35;
+    const minX = Math.floor(x - radius);
+    const maxX = Math.ceil(x + radius);
+    const minY = Math.floor(y - radius);
+    const maxY = Math.ceil(y + radius);
 
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        if (!inBounds(x, y) || getCell(x, y) !== TRAIL) continue;
-        const cx = x + 0.5;
-        const cy = y + 0.5;
-        const dx = enemy.x - cx;
-        const dy = enemy.y - cy;
+    for (let gy = minY; gy <= maxY; gy++) {
+      for (let gx = minX; gx <= maxX; gx++) {
+        if (!inBounds(gx, gy) || getCell(gx, gy) !== TRAIL) continue;
+        const cx = gx + 0.5;
+        const cy = gy + 0.5;
+        const dx = x - cx;
+        const dy = y - cy;
         if (dx * dx + dy * dy <= radius * radius) return true;
       }
     }
     return false;
+  }
+
+  function enemyTouchesTrail(enemy) {
+    return circleTouchesTrail(enemy.x, enemy.y, enemy.radius);
   }
 
   function positionIsFree(x, y, radius) {
@@ -361,12 +364,19 @@
   }
 
   function moveEnemy(enemy) {
+    // A diferencia del jugador, el trazo NO es una pared segura para los
+    // enemigos: si lo alcanzan durante su movimiento, se pierde una vida.
     if (player.drawing && enemyTouchesTrail(enemy)) {
       loseLife();
       return;
     }
 
     const nx = enemy.x + enemy.vx;
+    if (player.drawing && circleTouchesTrail(nx, enemy.y, enemy.radius)) {
+      loseLife();
+      return;
+    }
+
     if (positionIsFree(nx, enemy.y, enemy.radius)) {
       enemy.x = nx;
     } else {
@@ -374,6 +384,11 @@
     }
 
     const ny = enemy.y + enemy.vy;
+    if (player.drawing && circleTouchesTrail(enemy.x, ny, enemy.radius)) {
+      loseLife();
+      return;
+    }
+
     if (positionIsFree(enemy.x, ny, enemy.radius)) {
       enemy.y = ny;
     } else {

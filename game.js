@@ -207,6 +207,12 @@
       } else if (destination === FREE) {
         setCell(nx, ny, TRAIL);
         player.trail.push({ x: nx, y: ny });
+        // La traza recién creada también puede aparecer debajo del boss o de
+        // un enemigo menor. El contacto mata antes de esperar su próximo movimiento.
+        if (anyEnemyTouchesTrail()) {
+          loseLife();
+          return;
+        }
       }
       return;
     }
@@ -218,6 +224,12 @@
       player.drawing = true;
       setCell(nx, ny, TRAIL);
       player.trail.push({ x: nx, y: ny });
+      // Si al crear esta primera celda la traza toca un enemigo, se pierde
+      // inmediatamente la vida.
+      if (anyEnemyTouchesTrail()) {
+        loseLife();
+        return;
+      }
     }
   }
 
@@ -328,21 +340,29 @@
     return reachable;
   }
 
-  function circleTouchesTrail(x, y, enemyRadius) {
-    const radius = enemyRadius + 0.35;
-    const minX = Math.floor(x - radius);
-    const maxX = Math.ceil(x + radius);
-    const minY = Math.floor(y - radius);
-    const maxY = Math.ceil(y + radius);
+  // Colisión exacta entre el círculo de un enemigo y una celda cuadrada.
+  // Usar el cuadrado completo es importante: antes la detección de TRAIL
+  // aproximaba cada celda por su centro, mientras el rebote usaba la celda
+  // completa. Eso permitía que un enemigo rebotara en un borde/esquina del
+  // trazo sin que se registrara la muerte del jugador.
+  function circleIntersectsCell(x, y, radius, gx, gy) {
+    const closestX = Math.max(gx, Math.min(x, gx + 1));
+    const closestY = Math.max(gy, Math.min(y, gy + 1));
+    const dx = x - closestX;
+    const dy = y - closestY;
+    return dx * dx + dy * dy <= radius * radius + 1e-9;
+  }
+
+  function circleTouchesTrail(x, y, radius) {
+    const minX = Math.floor(x - radius) - 1;
+    const maxX = Math.ceil(x + radius) + 1;
+    const minY = Math.floor(y - radius) - 1;
+    const maxY = Math.ceil(y + radius) + 1;
 
     for (let gy = minY; gy <= maxY; gy++) {
       for (let gx = minX; gx <= maxX; gx++) {
         if (!inBounds(gx, gy) || getCell(gx, gy) !== TRAIL) continue;
-        const cx = gx + 0.5;
-        const cy = gy + 0.5;
-        const dx = x - cx;
-        const dy = y - cy;
-        if (dx * dx + dy * dy <= radius * radius) return true;
+        if (circleIntersectsCell(x, y, radius, gx, gy)) return true;
       }
     }
     return false;
@@ -352,13 +372,19 @@
     return circleTouchesTrail(enemy.x, enemy.y, enemy.radius);
   }
 
+  function anyEnemyTouchesTrail() {
+    if (!player.drawing) return false;
+    if (enemyTouchesTrail(boss)) return true;
+    return minors.some(enemyTouchesTrail);
+  }
+
   // Comprueba todo el segmento recorrido entre dos posiciones. Así un enemigo
   // rápido no puede "saltar" una celda de TRAIL entre dos ticks.
   function sweptCircleTouchesTrail(x0, y0, x1, y1, radius) {
     const dx = x1 - x0;
     const dy = y1 - y0;
     const distance = Math.hypot(dx, dy);
-    const steps = Math.max(1, Math.ceil(distance / 0.12));
+    const steps = Math.max(1, Math.ceil(distance / 0.08));
 
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
@@ -369,18 +395,23 @@
     return false;
   }
 
+  // La misma geometría exacta se usa para las paredes CLAIMED. De este modo
+  // "tocar TRAIL" y "chocar con pared" no pueden discrepar geométricamente.
   function positionIsFree(x, y, radius) {
-    const samples = [
-      [x - radius, y], [x + radius, y], [x, y - radius], [x, y + radius],
-      [x - radius * .7, y - radius * .7], [x + radius * .7, y - radius * .7],
-      [x - radius * .7, y + radius * .7], [x + radius * .7, y + radius * .7]
-    ];
+    const minX = Math.floor(x - radius) - 1;
+    const maxX = Math.ceil(x + radius) + 1;
+    const minY = Math.floor(y - radius) - 1;
+    const maxY = Math.ceil(y + radius) + 1;
 
-    return samples.every(([sx, sy]) => {
-      const gx = Math.floor(sx);
-      const gy = Math.floor(sy);
-      return inBounds(gx, gy) && getCell(gx, gy) === FREE;
-    });
+    for (let gy = minY; gy <= maxY; gy++) {
+      for (let gx = minX; gx <= maxX; gx++) {
+        if (!inBounds(gx, gy)) return false;
+        if (getCell(gx, gy) !== FREE && circleIntersectsCell(x, y, radius, gx, gy)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   // Igual que la detección de TRAIL, comprobamos toda la trayectoria para que

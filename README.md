@@ -37,7 +37,7 @@ Mientras el trazo está abierto, **cualquier contacto con la traza hace perder u
 - si un **enemigo menor** toca la traza, se pierde una vida;
 - si el **jugador** vuelve a tocar una parte ya dibujada de su propia traza, también se pierde una vida.
 
-Al perder una vida, el trazo incompleto desaparece y el jugador vuelve a una posición segura. La colisión de los enemigos se comprueba a lo largo de todo su desplazamiento entre ticks para que un enemigo rápido no pueda atravesar la traza sin ser detectado.
+Al perder una vida, el trazo incompleto desaparece y el jugador vuelve a una posición segura. La colisión de los enemigos se comprueba a lo largo de todo su desplazamiento entre ticks para que un enemigo rápido no pueda atravesar la traza sin ser detectado. La detección usa la geometría completa de cada celda del trazo (círculo del enemigo contra cuadrado de la celda), de modo que tocar un borde o una esquina de la traza también cuenta como impacto y nunca como un simple rebote.
 
 ## Objetivo
 

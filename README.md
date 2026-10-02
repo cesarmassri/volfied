@@ -31,7 +31,13 @@ Esta regla reproduce la idea importante de que se puede **encerrar y matar enemi
 
 ## Riesgo
 
-Mientras el trazo está abierto, cualquier enemigo que lo toque hace perder una vida. El trazo incompleto desaparece y el jugador vuelve a una posición segura. Para el jugador, en cambio, su propio trazo abierto funciona como una pared: no puede atravesarlo ni pisarlo, pero tocarlo no cuesta una vida.
+Mientras el trazo está abierto, **cualquier contacto con la traza hace perder una vida**:
+
+- si el **boss** toca la traza, se pierde una vida;
+- si un **enemigo menor** toca la traza, se pierde una vida;
+- si el **jugador** vuelve a tocar una parte ya dibujada de su propia traza, también se pierde una vida.
+
+Al perder una vida, el trazo incompleto desaparece y el jugador vuelve a una posición segura. La colisión de los enemigos se comprueba a lo largo de todo su desplazamiento entre ticks para que un enemigo rápido no pueda atravesar la traza sin ser detectado.
 
 ## Objetivo
 
@@ -39,8 +45,8 @@ Hay que conquistar al menos **75%** del área interior para superar el nivel.
 
 Cada nivel es más difícil que el anterior:
 
-- el **boss aumenta su velocidad** en cada nivel;
-- los **enemigos menores también aceleran** en cada nivel;
+- el **boss aumenta su velocidad** en `0.04` celdas por tick en cada nivel;
+- los **enemigos menores aumentan su velocidad** en `0.045` celdas por tick en cada nivel;
 - aparece **un enemigo menor adicional por nivel** hasta un máximo de 12;
 - después de alcanzar ese máximo, la dificultad sigue creciendo mediante la velocidad;
 - los enemigos menores parten con una velocidad suficientemente alta para que los cortes largos sean arriesgados;

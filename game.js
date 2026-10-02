@@ -26,9 +26,9 @@
   // Velocidades en celdas por tick. Los enemigos menores son
   // deliberadamente más rápidos para que cortar áreas grandes tenga riesgo.
   const BOSS_BASE_SPEED = 0.19;
-  const BOSS_LEVEL_SPEED = 0.018;
+  const BOSS_LEVEL_SPEED = 0.04;
   const MINOR_BASE_SPEED = 0.275;
-  const MINOR_LEVEL_SPEED = 0.018;
+  const MINOR_LEVEL_SPEED = 0.045;
   const MINOR_SPEED_VARIATION = 0.04;
   const MAX_MINOR_ENEMIES = 12;
 
@@ -192,9 +192,12 @@
     const destination = getCell(nx, ny);
 
     if (player.drawing) {
-      // El jugador no puede cruzar ni pisar su propio trazo abierto.
-      // Para él, el TRAIL funciona como una pared.
-      if (destination === TRAIL) return;
+      // Tocar cualquier parte ya dibujada del trazo abierto cuesta una vida.
+      // Esto incluye retroceder sobre la propia traza o cruzarla.
+      if (destination === TRAIL) {
+        loseLife();
+        return;
+      }
 
       player.x = nx;
       player.y = ny;
@@ -349,6 +352,23 @@
     return circleTouchesTrail(enemy.x, enemy.y, enemy.radius);
   }
 
+  // Comprueba todo el segmento recorrido entre dos posiciones. Así un enemigo
+  // rápido no puede "saltar" una celda de TRAIL entre dos ticks.
+  function sweptCircleTouchesTrail(x0, y0, x1, y1, radius) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const distance = Math.hypot(dx, dy);
+    const steps = Math.max(1, Math.ceil(distance / 0.12));
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const x = x0 + dx * t;
+      const y = y0 + dy * t;
+      if (circleTouchesTrail(x, y, radius)) return true;
+    }
+    return false;
+  }
+
   function positionIsFree(x, y, radius) {
     const samples = [
       [x - radius, y], [x + radius, y], [x, y - radius], [x, y + radius],
@@ -363,39 +383,64 @@
     });
   }
 
+  // Igual que la detección de TRAIL, comprobamos toda la trayectoria para que
+  // las velocidades altas de niveles avanzados tampoco atraviesen paredes
+  // CLAIMED por tunneling.
+  function sweptPositionIsFree(x0, y0, x1, y1, radius) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const distance = Math.hypot(dx, dy);
+    const steps = Math.max(1, Math.ceil(distance / 0.12));
+
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      if (!positionIsFree(x0 + dx * t, y0 + dy * t, radius)) return false;
+    }
+    return true;
+  }
+
   function moveEnemy(enemy) {
-    // A diferencia del jugador, el trazo NO es una pared segura para los
-    // enemigos: si lo alcanzan durante su movimiento, se pierde una vida.
+    // El TRAIL nunca es una pared segura: cualquier contacto del boss o de
+    // un enemigo menor con la traza abierta cuesta una vida. La comprobación
+    // es continua a lo largo de cada desplazamiento para evitar tunneling.
     if (player.drawing && enemyTouchesTrail(enemy)) {
       loseLife();
       return;
     }
 
-    const nx = enemy.x + enemy.vx;
-    if (player.drawing && circleTouchesTrail(nx, enemy.y, enemy.radius)) {
+    const startX = enemy.x;
+    const startY = enemy.y;
+    const nx = startX + enemy.vx;
+
+    if (player.drawing &&
+        sweptCircleTouchesTrail(startX, startY, nx, startY, enemy.radius)) {
       loseLife();
       return;
     }
 
-    if (positionIsFree(nx, enemy.y, enemy.radius)) {
+    if (sweptPositionIsFree(startX, startY, nx, startY, enemy.radius)) {
       enemy.x = nx;
     } else {
       enemy.vx *= -1;
     }
 
-    const ny = enemy.y + enemy.vy;
-    if (player.drawing && circleTouchesTrail(enemy.x, ny, enemy.radius)) {
+    const beforeY = enemy.y;
+    const ny = beforeY + enemy.vy;
+    if (player.drawing &&
+        sweptCircleTouchesTrail(enemy.x, beforeY, enemy.x, ny, enemy.radius)) {
       loseLife();
       return;
     }
 
-    if (positionIsFree(enemy.x, ny, enemy.radius)) {
+    if (sweptPositionIsFree(enemy.x, beforeY, enemy.x, ny, enemy.radius)) {
       enemy.y = ny;
     } else {
       enemy.vy *= -1;
     }
 
-    if (player.drawing && enemyTouchesTrail(enemy)) loseLife();
+    if (player.drawing && enemyTouchesTrail(enemy)) {
+      loseLife();
+    }
   }
 
   function claimedPercent() {
